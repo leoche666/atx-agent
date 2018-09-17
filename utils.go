@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/codeskyblue/goreq"
 	"github.com/codeskyblue/procfs"
+	"github.com/franela/goreq"
 	shellquote "github.com/kballard/go-shellquote"
 	"github.com/openatx/androidutils"
 	"github.com/shogo82148/androidbinary/apk"
@@ -176,18 +176,6 @@ func pidOf(packageName string) (pid int, err error) {
 	return 0, errors.New("package not found")
 }
 
-func procWalk(fn func(p procfs.Proc)) error {
-	fs, err := procfs.NewFS(procfs.DefaultMountPoint)
-	if err != nil {
-		return err
-	}
-	procs, err := fs.AllProcs()
-	for _, proc := range procs {
-		fn(proc)
-	}
-	return nil
-}
-
 // get main activity with packageName
 func mainActivityOf(packageName string) (activity string, err error) {
 	output, err := runShellOutput("pm", "list", "packages", "-f", packageName)
@@ -204,7 +192,7 @@ func mainActivityOf(packageName string) (activity string, err error) {
 		if err != nil {
 			return "", err
 		}
-		return pkg.MainAcitivty()
+		return pkg.MainActivity()
 	}
 	return "", errors.New("package not found")
 }
@@ -277,14 +265,4 @@ func getCachedProperty(name string) string {
 
 func getProperty(name string) string {
 	return androidutils.Property(name)
-}
-
-func copyToFile(rd io.Reader, dst string) error {
-	fd, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer fd.Close()
-	_, err = io.Copy(fd, rd)
-	return err
 }

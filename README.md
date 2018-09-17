@@ -96,14 +96,6 @@ $ curl -F "file=@somefile.txt" $DEVICE_URL/upload/sdcard/
 $ curl -F "file=@somefile.txt" $DEVICE_URL/upload/sdcard/tmp.txt
 ```
 
-上传目录（url必须以/结尾)
-
-```bash
-$ curl -F file=@some.zip -F dir=true $DEVICE_URL/upload/sdcard/
-```
-
-相当于将`some.zip`上传到手机，然后执行`unzip some.zip -d /sdcard`, 最后将`some.zip`删除
-
 ## 离线下载
 ```bash
 # 离线下载，返回ID
@@ -195,7 +187,7 @@ Websocket连接 `$DEVICE_URL/minitouch`, 一行行的按照JSON的格式写入
     坐标(X: 50%, Y: 50%), index代表第几个手指, `pressure`是可选的。
 
     ```json
-    {"operation": "d", "index": 0, "xP": 0.5, "yP": 0.5, "pressure": 50}
+    {"operation": "d", "index": 0, "pX": 0.5, "pY": 0.5, "pressure": 50}
     ```
 
 - Touch Commit
@@ -207,7 +199,7 @@ Websocket连接 `$DEVICE_URL/minitouch`, 一行行的按照JSON的格式写入
 - Touch Move
 
     ```json
-    {"operation": "m", "index": 0, "xP": 0.5, "yP": 0.5, "pressure": 50}
+    {"operation": "m", "index": 0, "pX": 0.5, "pY": 0.5, "pressure": 50}
     ```
 
 - Touch Up
@@ -219,9 +211,9 @@ Websocket连接 `$DEVICE_URL/minitouch`, 一行行的按照JSON的格式写入
 - 点击x:20%, y:20,滑动到x:40%, y:50%
 
     ```json
-    {"operation": "d", "index": 0, "xP": 0.20, "yP": 0.20, "pressure": 50}
+    {"operation": "d", "index": 0, "pX": 0.20, "pY": 0.20, "pressure": 50}
     {"operation": "c"}
-    {"operation": "m", "index": 0, "xP": 0.40, "yP": 0.50, "pressure": 50}
+    {"operation": "m", "index": 0, "pX": 0.40, "pY": 0.50, "pressure": 50}
     {"operation": "c"}
     {"operation": "u", "index": 0}
     {"operation": "c"}
@@ -283,8 +275,37 @@ go generate
 go build -tags vfs
 ```
 
-## TODO
-- [ ] 使用支持多线程下载的库 https://github.com/cavaliercoder/grab
+# 重要更新历史
+- ?.?.?
+
+    * 还是看git日志吧
+
+- 0.0.8
+
+    * 支持连接Server获取最新版本，并自动升级
+
+- 0.0.7
+
+    * 响应服务端的websocket PING请求
+    * 如果安装失败，尝试先卸载，然后继续安装
+
+- 0.0.6
+
+    * 支持文件上传
+
+- 0.0.5
+
+    * 移除每次启动时自动安装minicap, com.github.uiautomator应用
+
+- 0.0.4
+
+    * 增加网页版的控制台
+    * 支持daemon模式运行
+
+- 0.0.3
+
+    * 增加安装应用支持
+
 
 # LICENSE
 [MIT](LICENSE)

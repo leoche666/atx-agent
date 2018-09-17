@@ -9,8 +9,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/codeskyblue/goreq"
+	"github.com/franela/goreq"
 	"github.com/miekg/dns"
+)
+
+var (
+	version    = "dev"
+	owner      = "openatx"
+	repo       = "atx-agent"
+	listenPort int
+	httpServer *http.Server
 )
 
 func dnsLookupHost(hostname string) (ip net.IP, err error) {

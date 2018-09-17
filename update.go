@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/codeskyblue/goreq"
+	"github.com/franela/goreq"
 	"github.com/getlantern/go-update"
 	"github.com/mholt/archiver"
 	"github.com/mitchellh/ioprogress"

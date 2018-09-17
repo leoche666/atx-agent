@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 
-	"github.com/qiniu/log"
+	log "github.com/sirupsen/logrus"
 )
 
 type toucher struct {
@@ -39,8 +39,12 @@ func drainTouchRequests(conn net.Conn, reqC chan TouchRequest) error {
 	if err := lineRd.Scanf("%s %d", &flag, &pid); err != nil {
 		return err
 	}
-
-	log.Debugf("handle touch requests maxX:%d maxY:%d maxPressure:%d maxContacts:%s", maxX, maxY, maxPressure, maxContacts)
+	log.WithFields(log.Fields{
+		"maxX":        maxX,
+		"maxY":        maxY,
+		"maxPressure": maxPressure,
+		"maxContacts": maxContacts,
+	}).Info("handle touch requests")
 	go io.Copy(ioutil.Discard, conn) // ignore the rest output
 	var posX, posY int
 	for req := range reqC {
@@ -56,7 +60,10 @@ func drainTouchRequests(conn net.Conn, reqC chan TouchRequest) error {
 				pressure = maxPressure - 1
 			}
 			line := fmt.Sprintf("%s %d %d %d %d\n", req.Operation, req.Index, posX, posY, pressure)
-			log.Debugf("write to @minitouch %v", line)
+			log.WithFields(log.Fields{
+				"touch":      req,
+				"remoteAddr": conn.RemoteAddr(),
+			}).Debug("write to @minitouch", line)
 			_, err = conn.Write([]byte(line))
 		case "u":
 			_, err = conn.Write([]byte(fmt.Sprintf("u %d\n", req.Index)))

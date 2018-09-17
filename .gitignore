@@ -16,7 +16,9 @@
 
 atx-agent
 testcmd/
+bin/
 
 *.tmp/
 *.exe.old
 *.apk
+.idea

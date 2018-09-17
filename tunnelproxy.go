@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/codeskyblue/goreq"
 	"github.com/codeskyblue/heartbeat"
+	"github.com/franela/goreq"
 	"github.com/openatx/androidutils"
 	"github.com/openatx/atx-server/proto"
 )
@@ -74,7 +75,6 @@ type versionResponse struct {
 type TunnelProxy struct {
 	ServerAddr string
 	Secret     string
-
 	udid string
 }
 
@@ -118,23 +118,20 @@ func (t *TunnelProxy) checkUpdate() error {
 	if err := res.Body.FromJsonTo(verResp); err != nil {
 		return err
 	}
-	log.Println("Disable upgrade, until code fixed")
-
-	// if verResp.AgentVersion != version {
-	// 	if version == "dev" {
-	// 		log.Printf("dev version, skip version upgrade")
-	// 	} else {
-	// 		log.Printf("server require agent version: %v, but current %s, going to upgrade", verResp.AgentVersion, version)
-	// 		if err := doUpdate(verResp.AgentVersion); err != nil {
-	// 			log.Printf("upgrade error: %v", err)
-	// 			return err
-	// 		}
-	// 		log.Printf("restarting server")
-	// os.Setenv(daemon.MARK_NAME, daemon.MARK_VALUE+":reset")
-	// 		runDaemon()
-	// 		os.Exit(0)
-	// 	}
-	// }
+	if verResp.AgentVersion != version {
+		if version == "dev" {
+			log.Printf("dev version, skip version upgrade")
+		} else {
+			log.Printf("server require agent version: %v, but current %s, going to upgrade", verResp.AgentVersion, version)
+			if err := doUpdate(verResp.AgentVersion); err != nil {
+				log.Printf("upgrade error: %v", err)
+				return err
+			}
+			log.Printf("restarting server")
+			runDaemon()
+			os.Exit(0)
+		}
+	}
 	return nil
 }
 

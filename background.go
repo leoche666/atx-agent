@@ -35,10 +35,10 @@ type BackgroundState struct {
 }
 
 type Background struct {
-	sm *syncmap.SyncMap
-	n  int
-	mu sync.Mutex
-	// timer *SafeTimer
+	sm    *syncmap.SyncMap
+	n     int
+	mu    sync.Mutex
+	timer *time.Timer
 }
 
 // Get return nil if not found
@@ -47,9 +47,15 @@ func (b *Background) Get(key string) (status *BackgroundState) {
 	if !ok {
 		return nil
 	}
-	status = value.(*BackgroundState)
-	return status
+	if b.timer != nil {
+		b.delayDelete(key)
+	}
+	return value.(*BackgroundState)
 }
+
+// func (b *Background) InstallApk(filepath string) (key string) {
+// 	return
+// }
 
 func (b *Background) genKey() (key string, state *BackgroundState) {
 	b.mu.Lock()
@@ -61,14 +67,22 @@ func (b *Background) genKey() (key string, state *BackgroundState) {
 	return
 }
 
+func (b *Background) delayDelete(key string) {
+	delay := 5 * time.Minute
+	if b.timer == nil {
+		b.timer = time.AfterFunc(delay, func() {
+			b.sm.Delete(key)
+		})
+	} else {
+		b.timer.Reset(delay)
+	}
+}
+
 func (b *Background) HTTPDownload(urlStr string, dst string, mode os.FileMode) (key string) {
 	key, state := b.genKey()
 	state.wg.Add(1)
 	go func() {
-		defer time.AfterFunc(5*time.Minute, func() {
-			b.sm.Delete(key)
-		})
-
+		defer b.delayDelete(key)
 		b.Get(key).Message = "downloading"
 		if err := b.doHTTPDownload(key, urlStr, dst, mode); err != nil {
 			b.Get(key).Message = "http download: " + err.Error()
@@ -148,6 +162,9 @@ func (b *Background) doHTTPDownload(key, urlStr, dst string, fileMode os.FileMod
 }
 
 type downloadProxy struct {
+	// Id         string      `json:"id"`
+	// Message    string      `json:"message"`
+	// ExtraData  interface{} `json:"extraData,omitempty"`
 	canceled   bool
 	writer     io.Writer
 	TotalSize  int    `json:"totalSize"`
